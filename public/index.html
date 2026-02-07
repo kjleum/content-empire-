@@ -1,0 +1,83 @@
+<button class="btn-small btn-reject" onclick="decide(${p.id}, 'rejected')">✕ Отклонить</button>
+                        </div>
+                    </div>
+                `).join('');
+            } catch (e) {
+                document.getElementById('postsList').innerHTML = '<div class="empty-state">Ошибка загрузки</div>';
+            }
+        }
+
+        async function decide(id, status) {
+            try {
+                await fetch(`${API_URL}/posts/decide`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({id, decision: status})
+                });
+                document.getElementById(`post-${id}`).classList.add('approved');
+                showToast(status === 'approved' ? '✅ Одобрено' : '❌ Отклонено');
+                setTimeout(loadPosts, 500);
+                loadStats();
+            } catch (e) {
+                showToast('Ошибка');
+            }
+        }
+
+        async function loadSources() {
+            try {
+                const r = await fetch(`${API_URL}/sources`);
+                const d = await r.json();
+                
+                document.getElementById('sourcesList').innerHTML = d.data.map(s => `
+                    <div class="source-item">
+                        <div class="source-icon">📡</div>
+                        <div class="source-info">
+                            <div class="source-name">${s.username}</div>
+                            <div class="source-meta">${s.category} • ${s.is_active ? 'Активен' : 'Выключен'}</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" ${s.is_active ? 'checked' : ''}>
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                `).join('');
+                
+                document.getElementById('statSources').textContent = d.data.length;
+            } catch (e) {}
+        }
+
+        function showAddSource() {
+            document.getElementById('addSourceForm').style.display = 'block';
+        }
+
+        function hideAddSource() {
+            document.getElementById('addSourceForm').style.display = 'none';
+        }
+
+        async function addSource() {
+            const u = document.getElementById('newUsername').value;
+            const c = document.getElementById('newCategory').value;
+            
+            if (!u) return showToast('Введите username');
+            
+            try {
+                await fetch(`${API_URL}/sources`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({username: u, category: c})
+                });
+                showToast('✅ Добавлено');
+                hideAddSource();
+                loadSources();
+            } catch (e) {
+                showToast('Ошибка');
+            }
+        }
+
+        // Старт
+        loadStats();
+        loadPosts();
+        setInterval(loadStats, 10000);
+    </script>
+</body>
+</html>
