@@ -1,3 +1,547 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Content Empire</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg: #0f1419;
+            --surface: #1a2332;
+            --primary: #2ecc71;
+            --text: #ffffff;
+            --text-secondary: #8b9bb4;
+            --danger: #e74c3c;
+            --warning: #f39c12;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding-bottom: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 16px;
+        }
+
+        .header {
+            background: linear-gradient(135deg, var(--surface) 0%, #0d1b2a 100%);
+            border-radius: 24px;
+            padding: 28px;
+            margin-bottom: 20px;
+            text-align: center;
+            border: 1px solid rgba(46, 204, 113, 0.2);
+        }
+
+        .live-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--primary);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 16px;
+        }
+
+        .live-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--primary);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+
+        .subtitle {
+            color: var(--text-secondary);
+            font-size: 14px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .stat-card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 4px;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+        }
+
+        .nav-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+        }
+
+        .nav-tab {
+            flex: 1;
+            min-width: 80px;
+            padding: 14px;
+            background: var(--surface);
+            border: none;
+            border-radius: 12px;
+            color: var(--text);
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .nav-tab.active {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.3s;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            background: var(--surface);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+}
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: #000;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: opacity 0.2s;
+        }
+
+        .btn:active {
+            opacity: 0.8;
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text);
+        }
+
+        .post-item {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 12px;
+            border-left: 3px solid var(--warning);
+        }
+
+        .post-item.approved {
+            border-left-color: var(--primary);
+        }
+
+        .post-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .viral-score {
+            background: rgba(46, 204, 113, 0.2);
+            color: var(--primary);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .post-text {
+            margin-bottom: 12px;
+            line-height: 1.5;
+            font-size: 14px;
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-small {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .btn-approve {
+            background: var(--primary);
+            color: #000;
+        }
+
+        .btn-reject {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: var(--text-secondary);
+        }
+
+        .source-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            margin-bottom: 8px;
+        }
+
+        .source-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+        }
+
+        .source-info {
+            flex: 1;
+        }
+
+        .source-name {
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+
+        .source-meta {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 48px;
+            height: 26px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 26px;
+            transition: 0.3s;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+
+        input:checked + .slider {
+            background: var(--primary);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
+
+        input, select {
+            width: 100%;
+            padding: 14px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+color: var(--text);
+            margin-bottom: 12px;
+            font-size: 15px;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: var(--primary);
+            color: #000;
+            padding: 16px 24px;
+            border-radius: 12px;
+            font-weight: 700;
+            opacity: 0;
+            transition: all 0.3s;
+            z-index: 1000;
+        }
+
+        .toast.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="live-badge">
+                <div class="live-dot"></div>
+                <span>AUTO-PILOT ACTIVE</span>
+            </div>
+            <h1>🚀 AI Content Empire</h1>
+            <div class="subtitle">Автоматизация контента</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-value" id="statTotal">0</div>
+                <div class="stat-label">Всего постов</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statPublished">0</div>
+                <div class="stat-label">Опубликовано</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statQueue">0</div>
+                <div class="stat-label">В очереди</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-value" id="statSources">0</div>
+                <div class="stat-label">Источников</div>
+            </div>
+        </div>
+
+        <div class="nav-tabs">
+            <button class="nav-tab active" onclick="showTab('mod')">🛡️ Модерация</button>
+            <button class="nav-tab" onclick="showTab('sources')">📡 Источники</button>
+            <button class="nav-tab" onclick="showTab('settings')">⚙️ Настройки</button>
+        </div>
+
+        <!-- МОДЕРАЦИЯ -->
+        <div id="mod" class="section active">
+            <div class="card">
+                <div class="card-title">
+                    🛡️ На проверке
+                    <span class="viral-score" id="pendingCount">0</span>
+                </div>
+                <div id="postsList">
+                    <div class="empty-state">
+                        <div style="font-size: 48px; margin-bottom: 12px;">⏳</div>
+                        <div>Загрузка...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ИСТОЧНИКИ -->
+        <div id="sources" class="section">
+            <div class="card">
+                <div class="card-title">
+                    📡 Каналы
+                    <button class="btn" style="width: auto; padding: 10px 20px; margin: 0;" onclick="showAddSource()">+ Добавить</button>
+                </div>
+                <div id="sourcesList"></div>
+            </div>
+
+            <div class="card" id="addSourceForm" style="display: none;">
+                <div class="card-title">➕ Новый источник</div>
+                <input type="text" id="newUsername" placeholder="@channelname">
+                <select id="newCategory">
+                    <option value="news">📰 Новости</option>
+                    <option value="tech">💻 Технологии</option>
+                    <option value="crypto">💰 Криптовалюты</option>
+                    <option value="business">💼 Бизнес</option>
+                </select>
+                <div class="post-actions">
+                    <button class="btn-small btn-approve" onclick="addSource()">Добавить</button>
+                    <button class="btn-small btn-secondary" onclick="hideAddSource()">Отмена</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- НАСТРОЙКИ -->
+        <div id="settings" class="section">
+            <div class="card">
+                <div class="card-title">⚙️ Автопилот</div>
+                
+                <div class="source-item">
+<div class="source-info">
+                        <div class="source-name">Автопарсинг</div>
+                        <div class="source-meta">Каждые 5 минут</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked id="autoParse">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="source-item">
+                    <div class="source-info">
+                        <div class="source-name">Автопубликация</div>
+                        <div class="source-meta">Каждые 30 минут</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked id="autoPublish">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="source-item">
+                    <div class="source-info">
+                        <div class="source-name">Авторерайт дублей</div>
+                        <div class="source-meta">AI переписывает похожий контент</div>
+                    </div>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked id="autoRewrite">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <div class="toast" id="toast"></div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin + '/api';
+        let tg = window.Telegram.WebApp;
+        tg.expand();
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.classList.add('show');
+            setTimeout(() => t.classList.remove('show'), 3000);
+        }
+
+        function showTab(tab) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
+            document.getElementById(tab).classList.add('active');
+            event.target.classList.add('active');
+            
+            if (tab === 'mod') loadPosts();
+            if (tab === 'sources') loadSources();
+        }
+
+        async function loadStats() {
+            try {
+                const r = await fetch(`${API_URL}/stats`);
+                const d = await r.json();
+                document.getElementById('statTotal').textContent = d.total;
+                document.getElementById('statPublished').textContent = d.published;
+            } catch (e) {}
+        }
+
+        async function loadPosts() {
+            try {
+                const r = await fetch(`${API_URL}/posts/pending`);
+                const d = await r.json();
+                
+                document.getElementById('pendingCount').textContent = d.data.length;
+                
+                if (d.data.length === 0) {
+                    document.getElementById('postsList').innerHTML = `
+                        <div class="empty-state">
+                            <div style="font-size: 48px; margin-bottom: 12px;">✅</div>
+                            <div>Все посты обработаны!</div>
+                        </div>`;
+                    return;
+                }
+
+                document.getElementById('postsList').innerHTML = d.data.map(p => `
+                    <div class="post-item" id="post-${p.id}">
+                        <div class="post-header">
+                            <span>${p.category || 'news'}</span>
+                            <span class="viral-score">🔥 ${p.viral_score || 50}/100</span>
+                        </div>
+                        <div class="post-text">${p.content?.substring(0, 150) || 'Нет текста'}...</div>
+                        <div class="post-actions">
+                            <button class="btn-small btn-approve" onclick="decide(${p.id}, 'approved')">✓ Одобрить</button>
 <button class="btn-small btn-reject" onclick="decide(${p.id}, 'rejected')">✕ Отклонить</button>
                         </div>
                     </div>
