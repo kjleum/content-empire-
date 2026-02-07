@@ -37,7 +37,7 @@ app.get('/api/stats', async (req, res) => {
             .select('*', { count: 'exact', head: true })
             .eq('status', 'published');
 
-        res.json({ total: total  0, published: published  0 });
+        res.json({ total: total || 0, published: published || 0 });
     } catch (error) {
         res.json({ total: 0, published: 0 });
     }
